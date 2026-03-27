@@ -544,7 +544,7 @@ export default config;
   }
 
   /* Mobile Navigation */
-  .mobile-header {
+  .-header {
     @apply flex h-[60px] justify-between px-5 sm:hidden !important;
   }
   .header-user {
