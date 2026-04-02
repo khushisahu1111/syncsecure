@@ -3,7 +3,7 @@ import Sort from "@/components/Sort";
 import { getFiles } from "@/lib/actions/file.actions";
 import { Models } from "node-appwrite";
 import Card from "@/components/Card";
-import { getFileTypesParams } from "@/lib/utils";
+import { getFileTypesParams, convertFileSize } from "@/lib/utils";
 
 const Page = async ({ searchParams, params }: SearchParamProps) => {
   const type = ((await params)?.type as string) || "";
@@ -14,19 +14,35 @@ const Page = async ({ searchParams, params }: SearchParamProps) => {
 
   const files = await getFiles({ types, searchText, sort });
 
+  // Compute real total size across all fetched documents
+  const totalSize = files.documents.reduce(
+    (acc: number, file: Models.Document) => acc + (file.size ?? 0),
+    0,
+  );
+
   return (
     <div className="page-container">
       <section className="w-full">
-        <h1 className="h1 capitalize">{type}</h1>
+        {/* Page heading — Playfair Display via font-serif */}
+        <h1
+          className="text-[34px] leading-[42px] font-bold capitalize text-[#2C2C2C]"
+          style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+        >
+          {type}
+        </h1>
 
         <div className="total-size-section">
-          <p className="body-1">
-            Total: <span className="h5">0 MB</span>
+          <p className="text-[16px] leading-[24px] text-[#5C5142]">
+            Total:{" "}
+            <span className="text-[16px] font-semibold text-[#C5A059]">
+              {convertFileSize(totalSize)}
+            </span>
           </p>
 
           <div className="sort-container">
-            <p className="body-1 hidden text-light-200 sm:block">Sort by:</p>
-
+            <p className="hidden text-[14px] text-[#8A7A65] sm:block">
+              Sort by:
+            </p>
             <Sort />
           </div>
         </div>
@@ -40,7 +56,14 @@ const Page = async ({ searchParams, params }: SearchParamProps) => {
           ))}
         </section>
       ) : (
-        <p className="empty-list">No files uploaded</p>
+        <div className="mt-10 w-full flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-[#C5A059]/40 bg-[#FDFBF7] py-16">
+          <p className="text-[16px] text-[#8A7A65] font-light tracking-wide">
+            No files uploaded
+          </p>
+          <p className="text-[12px] text-[#C5A059]/60 tracking-[0.15em] uppercase">
+            This folder is empty
+          </p>
+        </div>
       )}
     </div>
   );

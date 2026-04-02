@@ -15,6 +15,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import FileUploader from "@/components/FileUploader";
+import EncryptedFileUploader from "@/components/EncryptedFileUploader";
 import { signOutUser } from "@/lib/actions/user.actions";
 
 interface Props {
@@ -37,39 +38,45 @@ const MobileNavigation = ({
 
   return (
     <header className="mobile-header">
-      <Image
-        src="/assets/icons/logo-full-brand.svg"
-        alt="logo"
-        width={120}
-        height={52}
-        className="h-auto"
-      />
+      {/* Mobile brand mark */}
+      <Link href="/" className="flex items-center gap-2">
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#16a34a]">
+          <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5">
+            <path d="M10 2L17 6V14L10 18L3 14V6L10 2Z" stroke="white" strokeWidth="1.5" strokeLinejoin="round" />
+          </svg>
+        </div>
+        <span className="text-[15px] font-bold text-[#0f172a] tracking-tight">
+          SyncSecure
+        </span>
+      </Link>
 
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger>
           <Image
             src="/assets/icons/menu.svg"
-            alt="Search"
-            width={30}
-            height={30}
+            alt="Menu"
+            width={26}
+            height={26}
           />
         </SheetTrigger>
-        <SheetContent className="shad-sheet h-screen px-3">
+        <SheetContent className="shad-sheet h-screen px-4">
           <SheetTitle>
             <div className="header-user">
               <Image
                 src={avatar}
                 alt="avatar"
-                width={44}
-                height={44}
+                width={40}
+                height={40}
                 className="header-user-avatar"
               />
-              <div className="sm:hidden lg:block">
-                <p className="subtitle-2 capitalize">{fullName}</p>
-                <p className="caption">{email}</p>
+              <div className="min-w-0">
+                <p className="text-[13px] font-semibold text-[#0f172a] capitalize truncate">
+                  {fullName}
+                </p>
+                <p className="text-[11px] text-[#94a3b8] truncate">{email}</p>
               </div>
             </div>
-            <Separator className="mb-4 bg-light-200/20" />
+            <Separator className="mb-4 h-px bg-[#e2e8f0]" />
           </SheetTitle>
 
           <nav className="mobile-nav">
@@ -85,8 +92,8 @@ const MobileNavigation = ({
                     <Image
                       src={icon}
                       alt={name}
-                      width={24}
-                      height={24}
+                      width={22}
+                      height={22}
                       className={cn(
                         "nav-icon",
                         pathname === url && "nav-icon-active",
@@ -99,10 +106,11 @@ const MobileNavigation = ({
             </ul>
           </nav>
 
-          <Separator className="my-5 bg-light-200/20" />
+          <Separator className="my-5 h-px bg-[#e2e8f0]" />
 
-          <div className="flex flex-col justify-between gap-5 pb-5">
+          <div className="flex flex-col justify-between gap-4 pb-5">
             <FileUploader ownerId={ownerId} accountId={accountId} />
+            <EncryptedFileUploader ownerId={ownerId} accountId={accountId} />
             <Button
               type="submit"
               className="mobile-sign-out-button"
@@ -110,11 +118,11 @@ const MobileNavigation = ({
             >
               <Image
                 src="/assets/icons/logout.svg"
-                alt="logo"
-                width={24}
-                height={24}
+                alt="logout"
+                width={22}
+                height={22}
               />
-              <p>Logout</p>
+              <p>Sign Out</p>
             </Button>
           </div>
         </SheetContent>

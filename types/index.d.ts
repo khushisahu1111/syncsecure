@@ -18,6 +18,8 @@ declare interface UploadFileProps {
   ownerId: string;
   accountId: string;
   path: string;
+  isEncrypted?: boolean; // opt-in; defaults to false — all existing uploads unaffected
+  folderId?: string;     // opt-in; omit for root-level uploads
 }
 declare interface GetFilesProps {
   types: FileType[];
@@ -74,3 +76,46 @@ declare interface ShareInputProps {
   onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onRemove: (email: string) => void;
 }
+
+// ============================== SHARED & DELETED FEATURES
+declare interface RestoreFileProps {
+  fileId: string;
+  path: string;
+}
+
+declare interface PermanentDeleteFileProps {
+  fileId: string;
+  bucketFileId: string;
+  path: string;
+}
+
+// ============================== FOLDER & STARRED FEATURES
+
+declare interface CreateFolderProps {
+  name: string;
+  path: string;
+}
+
+declare interface RenameFolderProps {
+  folderId: string;
+  name: string;
+  path: string;
+}
+
+declare interface DeleteFolderProps {
+  folderId: string;
+  path: string;
+}
+
+declare interface ToggleStarFileProps {
+  fileId: string;
+  isStarred: boolean;
+  path: string;
+}
+
+declare interface MoveFileToFolderProps {
+  fileId: string;
+  folderId: string | null;
+  path: string;
+}
+

@@ -60,8 +60,11 @@ const OtpModal = ({
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
       <AlertDialogContent className="shad-alert-dialog">
         <AlertDialogHeader className="relative flex justify-center">
-          <AlertDialogTitle className="h2 text-center">
-            Enter Your OTP
+          <AlertDialogTitle
+            className="h2 text-center text-charcoal"
+            style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+          >
+            Verify Your Identity
             <Image
               src="/assets/icons/close-dark.svg"
               alt="close"
@@ -71,9 +74,9 @@ const OtpModal = ({
               className="otp-close-button"
             />
           </AlertDialogTitle>
-          <AlertDialogDescription className="subtitle-2 text-center text-light-100">
-            We&apos;ve sent a code to{" "}
-            <span className="pl-1 text-brand">{email}</span>
+          <AlertDialogDescription className="subtitle-2 text-center text-latte">
+            We&apos;ve sent a verification code to{" "}
+            <span className="font-semibold text-gold">{email}</span>
           </AlertDialogDescription>
         </AlertDialogHeader>
 
@@ -95,27 +98,27 @@ const OtpModal = ({
               className="shad-submit-btn h-12"
               type="button"
             >
-              Submit
+              Verify & Continue
               {isLoading && (
                 <Image
                   src="/assets/icons/loader.svg"
                   alt="loader"
-                  width={24}
-                  height={24}
+                  width={22}
+                  height={22}
                   className="ml-2 animate-spin"
                 />
               )}
             </AlertDialogAction>
 
-            <div className="subtitle-2 mt-2 text-center text-light-100">
-              Didn&apos;t get a code?
+            <div className="subtitle-2 mt-2 text-center text-latte">
+              Didn&apos;t receive a code?{" "}
               <Button
                 type="button"
                 variant="link"
-                className="pl-1 text-brand"
+                className="pl-1 text-gold hover:text-gold-dark font-semibold transition-colors"
                 onClick={handleResendOtp}
               >
-                Click to resend
+                Resend
               </Button>
             </div>
           </div>

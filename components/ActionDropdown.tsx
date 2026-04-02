@@ -27,9 +27,12 @@ import {
   deleteFile,
   renameFile,
   updateFileUsers,
+  toggleStarFile,
+  moveFileToFolder,
 } from "@/lib/actions/file.actions";
+import { getFolders } from "@/lib/actions/folder.actions";
 import { usePathname } from "next/navigation";
-import { FileDetails, ShareInput } from "@/components/ActionsModalContent";
+import { FileDetails, ShareInput, MoveToFolderInput } from "@/components/ActionsModalContent";
 
 const ActionDropdown = ({ file }: { file: Models.Document }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -38,6 +41,8 @@ const ActionDropdown = ({ file }: { file: Models.Document }) => {
   const [name, setName] = useState(file.name);
   const [isLoading, setIsLoading] = useState(false);
   const [emails, setEmails] = useState<string[]>([]);
+  const [folders, setFolders] = useState<Models.Document[]>([]);
+  const [selectedFolderId, setSelectedFolderId] = useState("");
 
   const path = usePathname();
 
@@ -60,6 +65,8 @@ const ActionDropdown = ({ file }: { file: Models.Document }) => {
       share: () => updateFileUsers({ fileId: file.$id, emails, path }),
       delete: () =>
         deleteFile({ fileId: file.$id, bucketFileId: file.bucketFileId, path }),
+      move: () =>
+        moveFileToFolder({ fileId: file.$id, folderId: selectedFolderId, path }),
     };
 
     success = await actions[action.value as keyof typeof actions]();
@@ -90,7 +97,9 @@ const ActionDropdown = ({ file }: { file: Models.Document }) => {
     return (
       <DialogContent className="shad-dialog button">
         <DialogHeader className="flex flex-col gap-3">
-          <DialogTitle className="text-center text-light-100">
+          <DialogTitle
+            className="text-center text-[#0f172a] font-semibold"
+          >
             {label}
           </DialogTitle>
           {value === "rename" && (
@@ -108,20 +117,35 @@ const ActionDropdown = ({ file }: { file: Models.Document }) => {
               onRemove={handleRemoveUser}
             />
           )}
+          {value === "move" && (
+            <MoveToFolderInput
+              file={file}
+              folders={folders}
+              onSelectFolder={setSelectedFolderId}
+              selectedFolderId={selectedFolderId}
+            />
+          )}
           {value === "delete" && (
-            <p className="delete-confirmation">
-              Are you sure you want to delete{` `}
-              <span className="delete-file-name">{file.name}</span>?
+            <p className="text-center text-[13px] text-[#64748b]">
+              Are you sure you want to move{` `}
+              <span className="font-semibold text-[#16a34a]">{file.name}</span>{" "}
+              to trash?
             </p>
           )}
         </DialogHeader>
-        {["rename", "delete", "share"].includes(value) && (
+        {["rename", "delete", "share", "move"].includes(value) && (
           <DialogFooter className="flex flex-col gap-3 md:flex-row">
-            <Button onClick={closeAllModals} className="modal-cancel-button">
+            <Button
+              onClick={closeAllModals}
+              className="h-[48px] flex-1 rounded-xl border border-[#e2e8f0] bg-transparent text-[#64748b] hover:bg-[#f1f5f9] transition-colors"
+            >
               Cancel
             </Button>
-            <Button onClick={handleAction} className="modal-submit-button">
-              <p className="capitalize">{value}</p>
+            <Button
+              onClick={handleAction}
+              className="h-[48px] flex-1 rounded-xl bg-[#16a34a] text-white hover:bg-[#15803d] transition-colors"
+            >
+              <p className="capitalize">{value === "delete" ? "Move to Trash" : value}</p>
               {isLoading && (
                 <Image
                   src="/assets/icons/loader.svg"
@@ -158,11 +182,26 @@ const ActionDropdown = ({ file }: { file: Models.Document }) => {
             <DropdownMenuItem
               key={actionItem.value}
               className="shad-dropdown-item"
-              onClick={() => {
+              onClick={async () => {
+                if (actionItem.value === "star") {
+                  await toggleStarFile({
+                    fileId: file.$id,
+                    isStarred: file.isStarred ?? false,
+                    path,
+                  });
+                  return;
+                }
+
+                if (actionItem.value === "move") {
+                  const result = await getFolders();
+                  setFolders(result?.documents ?? []);
+                  setSelectedFolderId(file.folderId ?? "");
+                }
+
                 setAction(actionItem);
 
                 if (
-                  ["rename", "share", "delete", "details"].includes(
+                  ["rename", "share", "delete", "details", "move"].includes(
                     actionItem.value,
                   )
                 ) {
@@ -171,19 +210,37 @@ const ActionDropdown = ({ file }: { file: Models.Document }) => {
               }}
             >
               {actionItem.value === "download" ? (
-                <Link
-                  href={constructDownloadUrl(file.bucketFileId)}
-                  download={file.name}
-                  className="flex items-center gap-2"
-                >
-                  <Image
-                    src={actionItem.icon}
-                    alt={actionItem.label}
-                    width={30}
-                    height={30}
-                  />
-                  {actionItem.label}
-                </Link>
+                file.isEncrypted ? (
+                  // Encrypted file — route through our server-side decrypt API
+                  <Link
+                    href={`/api/decrypt?bucketFileId=${file.bucketFileId}&name=${encodeURIComponent(file.name)}`}
+                    download={file.name}
+                    className="flex items-center gap-2"
+                  >
+                    <Image
+                      src={actionItem.icon}
+                      alt={actionItem.label}
+                      width={30}
+                      height={30}
+                    />
+                    Decrypt &amp; Download
+                  </Link>
+                ) : (
+                  // Regular file — direct Appwrite download URL (unchanged)
+                  <Link
+                    href={constructDownloadUrl(file.bucketFileId)}
+                    download={file.name}
+                    className="flex items-center gap-2"
+                  >
+                    <Image
+                      src={actionItem.icon}
+                      alt={actionItem.label}
+                      width={30}
+                      height={30}
+                    />
+                    {actionItem.label}
+                  </Link>
+                )
               ) : (
                 <div className="flex items-center gap-2">
                   <Image
@@ -192,7 +249,7 @@ const ActionDropdown = ({ file }: { file: Models.Document }) => {
                     width={30}
                     height={30}
                   />
-                  {actionItem.label}
+                  {actionItem.value === "star" && file.isStarred ? "Unstar" : actionItem.label}
                 </div>
               )}
             </DropdownMenuItem>

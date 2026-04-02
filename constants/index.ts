@@ -24,7 +24,28 @@ export const navItems = [
     icon: "/assets/icons/others.svg",
     url: "/others",
   },
+  {
+    name: "Folders",
+    icon: "/assets/icons/documents.svg",
+    url: "/folders",
+  },
+  {
+    name: "Starred",
+    icon: "/assets/icons/dashboard.svg",
+    url: "/starred",
+  },
+  {
+    name: "Shared",
+    icon: "/assets/icons/share.svg",
+    url: "/shared",
+  },
+  {
+    name: "Deleted",
+    icon: "/assets/icons/delete.svg",
+    url: "/deleted",
+  },
 ];
+
 
 export const actionsDropdownItems = [
   {
@@ -46,6 +67,16 @@ export const actionsDropdownItems = [
     label: "Download",
     icon: "/assets/icons/download.svg",
     value: "download",
+  },
+  {
+    label: "Star",
+    icon: "/assets/icons/star.svg",
+    value: "star",
+  },
+  {
+    label: "Move to Folder",
+    icon: "/assets/icons/documents.svg",
+    value: "move",
   },
   {
     label: "Delete",

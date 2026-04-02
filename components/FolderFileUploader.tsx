@@ -2,7 +2,6 @@
 
 import React, { useCallback, useState } from "react";
 import { createPortal } from "react-dom";
-
 import { useDropzone } from "react-dropzone";
 import { Button } from "@/components/ui/button";
 import { cn, convertFileToUrl, getFileType } from "@/lib/utils";
@@ -16,10 +15,18 @@ import { usePathname } from "next/navigation";
 interface Props {
   ownerId: string;
   accountId: string;
+  folderId: string;
+  folderName: string;
   className?: string;
 }
 
-const FileUploader = ({ ownerId, accountId, className }: Props) => {
+const FolderFileUploader = ({
+  ownerId,
+  accountId,
+  folderId,
+  folderName,
+  className,
+}: Props) => {
   const path = usePathname();
   const { toast } = useToast();
   const [files, setFiles] = useState<File[]>([]);
@@ -33,7 +40,6 @@ const FileUploader = ({ ownerId, accountId, className }: Props) => {
           setFiles((prevFiles) =>
             prevFiles.filter((f) => f.name !== file.name),
           );
-
           return toast({
             description: (
               <p className="body-2 text-white">
@@ -45,7 +51,14 @@ const FileUploader = ({ ownerId, accountId, className }: Props) => {
           });
         }
 
-        return uploadFile({ file, ownerId, accountId, path })
+        // Upload with folderId so the file is associated with the folder
+        return uploadFile({
+          file,
+          ownerId,
+          accountId,
+          path,
+          folderId,
+        })
           .then((uploadedFile) => {
             if (uploadedFile) {
               setFiles((prevFiles) =>
@@ -54,7 +67,7 @@ const FileUploader = ({ ownerId, accountId, className }: Props) => {
             }
           })
           .catch((err: unknown) => {
-            console.error("[FileUploader] Upload failed:", err);
+            console.error("[FolderFileUploader] Upload failed:", err);
             // Remove the stuck file preview immediately on failure
             setFiles((prevFiles) =>
               prevFiles.filter((f) => f.name !== file.name),
@@ -74,7 +87,7 @@ const FileUploader = ({ ownerId, accountId, className }: Props) => {
 
       await Promise.all(uploadPromises);
     },
-    [ownerId, accountId, path],
+    [ownerId, accountId, path, folderId],
   );
 
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
@@ -88,29 +101,32 @@ const FileUploader = ({ ownerId, accountId, className }: Props) => {
   };
 
   return (
-    <div {...getRootProps()} className="cursor-pointer">
+    <div {...getRootProps()} className={cn("cursor-pointer", className)}>
       <input {...getInputProps()} />
-      <Button type="button" className={cn("uploader-button", className)}>
+      <Button
+        type="button"
+        className="flex items-center gap-2 rounded-xl border border-[#e2e8f0] bg-white px-3.5 py-2 text-[13px] font-medium text-[#64748b] shadow-sm transition-all hover:border-[#16a34a]/40 hover:text-[#16a34a] hover:bg-[#f0fdf4]"
+      >
         <Image
           src="/assets/icons/upload.svg"
           alt="upload"
-          width={20}
-          height={20}
-        />{" "}
-        <p>Upload</p>
+          width={16}
+          height={16}
+        />
+        Upload to &quot;{folderName}&quot;
       </Button>
+
       {files.length > 0 && typeof document !== "undefined" && createPortal(
         <ul className="uploader-preview-list" onClick={(e) => e.stopPropagation()}>
           <h4
             className="text-[16px] font-semibold text-charcoal mb-1"
             style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
           >
-            Uploading Files
+            Uploading to {folderName}
           </h4>
 
           {files.map((file, index) => {
             const { type, extension } = getFileType(file.name);
-
             return (
               <li
                 key={`${file.name}-${index}`}
@@ -122,7 +138,6 @@ const FileUploader = ({ ownerId, accountId, className }: Props) => {
                     extension={extension}
                     url={convertFileToUrl(file)}
                   />
-
                   <div className="flex flex-col gap-1.5 items-start">
                     <span className="subtitle-2 line-clamp-1 max-w-[200px] sm:max-w-[250px] text-charcoal">
                       {file.name}
@@ -135,7 +150,6 @@ const FileUploader = ({ ownerId, accountId, className }: Props) => {
                     />
                   </div>
                 </div>
-
                 <Image
                   src="/assets/icons/remove.svg"
                   width={22}
@@ -153,4 +167,4 @@ const FileUploader = ({ ownerId, accountId, className }: Props) => {
   );
 };
 
-export default FileUploader;
+export default FolderFileUploader;

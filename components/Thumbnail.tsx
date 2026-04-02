@@ -17,7 +17,8 @@ export const Thumbnail = ({
   imageClassName,
   className,
 }: Props) => {
-  const isImage = type === "image" && extension !== "svg";
+  // Only treat as a previewable image if the URL is non-empty
+  const isImage = type === "image" && extension !== "svg" && url.length > 0;
 
   return (
     <figure className={cn("thumbnail", className)}>
@@ -36,3 +37,4 @@ export const Thumbnail = ({
   );
 };
 export default Thumbnail;
+

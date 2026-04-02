@@ -17,26 +17,42 @@ const Sidebar = ({ fullName, avatar, email }: Props) => {
 
   return (
     <aside className="sidebar">
-      <Link href="/">
-        <Image
-          src="/assets/icons/logo-full-brand.svg"
-          alt="logo"
-          width={160}
-          height={50}
-          className="hidden h-auto lg:block"
-        />
-
-        <Image
-          src="/assets/icons/logo-brand.svg"
-          alt="logo"
-          width={52}
-          height={52}
-          className="lg:hidden"
-        />
+      {/* Brand mark */}
+      <Link href="/" className="flex items-center gap-2.5 px-1">
+        {/* Icon mark — always visible */}
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#16a34a] shrink-0 shadow-sm">
+          <svg
+            viewBox="0 0 20 20"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-4 w-4"
+          >
+            <path
+              d="M10 2L17 6V14L10 18L3 14V6L10 2Z"
+              stroke="white"
+              strokeWidth="1.5"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M10 2V18"
+              stroke="white"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              opacity="0.5"
+            />
+          </svg>
+        </div>
+        {/* Text — only on wide sidebar */}
+        <span className="hidden lg:block text-[16px] font-bold tracking-tight text-[#0f172a]">
+          SyncSecure
+        </span>
       </Link>
 
+      {/* Divider */}
+      <div className="mt-5 hidden lg:block h-px bg-[#f1f5f9]" />
+
       <nav className="sidebar-nav">
-        <ul className="flex flex-1 flex-col gap-6">
+        <ul className="flex flex-1 flex-col gap-0.5">
           {navItems.map(({ url, name, icon }) => (
             <Link key={name} href={url} className="lg:w-full">
               <li
@@ -48,8 +64,8 @@ const Sidebar = ({ fullName, avatar, email }: Props) => {
                 <Image
                   src={icon}
                   alt={name}
-                  width={24}
-                  height={24}
+                  width={18}
+                  height={18}
                   className={cn(
                     "nav-icon",
                     pathname === url && "nav-icon-active",
@@ -62,25 +78,20 @@ const Sidebar = ({ fullName, avatar, email }: Props) => {
         </ul>
       </nav>
 
-      <Image
-        src="/assets/images/files-2.png"
-        alt="logo"
-        width={506}
-        height={418}
-        className="w-full"
-      />
-
+      {/* User info */}
       <div className="sidebar-user-info">
         <Image
           src={avatar}
           alt="Avatar"
-          width={44}
-          height={44}
+          width={32}
+          height={32}
           className="sidebar-user-avatar"
         />
-        <div className="hidden lg:block">
-          <p className="subtitle-2 capitalize">{fullName}</p>
-          <p className="caption">{email}</p>
+        <div className="hidden lg:block min-w-0">
+          <p className="text-[13px] font-semibold text-[#0f172a] capitalize truncate">
+            {fullName}
+          </p>
+          <p className="text-[11px] text-[#94a3b8] truncate">{email}</p>
         </div>
       </div>
     </aside>

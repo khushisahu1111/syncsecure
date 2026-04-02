@@ -71,9 +71,25 @@ const AuthForm = ({ type }: { type: FormType }) => {
     <>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="auth-form">
-          <h1 className="form-title">
-            {type === "sign-in" ? "Sign In" : "Sign Up"}
-          </h1>
+          {/* Heading */}
+          <div className="space-y-1">
+            <h1 className="form-title">
+              {type === "sign-in" ? "Welcome Back" : "Create Account"}
+            </h1>
+            <p className="text-[14px] text-[#64748b] text-center md:text-left">
+              {type === "sign-in"
+                ? "Sign in to access your secure vault."
+                : "Join SyncSecure — your digital vault awaits."}
+            </p>
+          </div>
+
+          {/* Divider */}
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-px bg-[#e2e8f0]" />
+            <div className="h-1.5 w-1.5 rounded-full bg-[#16a34a]/40" />
+            <div className="flex-1 h-px bg-[#e2e8f0]" />
+          </div>
+
           {type === "sign-up" && (
             <FormField
               control={form.control}
@@ -82,7 +98,6 @@ const AuthForm = ({ type }: { type: FormType }) => {
                 <FormItem>
                   <div className="shad-form-item">
                     <FormLabel className="shad-form-label">Full Name</FormLabel>
-
                     <FormControl>
                       <Input
                         placeholder="Enter your full name"
@@ -91,7 +106,6 @@ const AuthForm = ({ type }: { type: FormType }) => {
                       />
                     </FormControl>
                   </div>
-
                   <FormMessage className="shad-form-message" />
                 </FormItem>
               )}
@@ -104,8 +118,9 @@ const AuthForm = ({ type }: { type: FormType }) => {
             render={({ field }) => (
               <FormItem>
                 <div className="shad-form-item">
-                  <FormLabel className="shad-form-label">Email</FormLabel>
-
+                  <FormLabel className="shad-form-label">
+                    Email Address
+                  </FormLabel>
                   <FormControl>
                     <Input
                       placeholder="Enter your email"
@@ -114,7 +129,6 @@ const AuthForm = ({ type }: { type: FormType }) => {
                     />
                   </FormControl>
                 </div>
-
                 <FormMessage className="shad-form-message" />
               </FormItem>
             )}
@@ -125,32 +139,32 @@ const AuthForm = ({ type }: { type: FormType }) => {
             className="form-submit-button"
             disabled={isLoading}
           >
-            {type === "sign-in" ? "Sign In" : "Sign Up"}
-
+            {type === "sign-in" ? "Sign In" : "Create Account"}
             {isLoading && (
               <Image
                 src="/assets/icons/loader.svg"
                 alt="loader"
-                width={24}
-                height={24}
+                width={22}
+                height={22}
                 className="ml-2 animate-spin"
               />
             )}
           </Button>
 
-          {errorMessage && <p className="error-message">*{errorMessage}</p>}
+          {errorMessage && (
+            <p className="error-message">*{errorMessage}</p>
+          )}
 
-          <div className="body-2 flex justify-center">
-            <p className="text-light-100">
+          <div className="body-2 flex justify-center gap-1">
+            <p className="text-[#94a3b8]">
               {type === "sign-in"
                 ? "Don't have an account?"
                 : "Already have an account?"}
             </p>
             <Link
               href={type === "sign-in" ? "/sign-up" : "/sign-in"}
-              className="ml-1 font-medium text-brand"
+              className="font-semibold text-[#16a34a] hover:text-[#15803d] transition-colors"
             >
-              {" "}
               {type === "sign-in" ? "Sign Up" : "Sign In"}
             </Link>
           </div>

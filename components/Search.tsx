@@ -83,19 +83,19 @@ const Search = () => {
                       url={file.url}
                       className="size-9 min-w-9"
                     />
-                    <p className="subtitle-2 line-clamp-1 text-light-100">
+                    <p className="text-[14px] leading-[20px] font-semibold line-clamp-1 text-[#2C2C2C]">
                       {file.name}
                     </p>
                   </div>
 
                   <FormattedDateTime
                     date={file.$createdAt}
-                    className="caption line-clamp-1 text-light-200"
+                    className="text-[12px] line-clamp-1 text-[#8A7A65]"
                   />
                 </li>
               ))
             ) : (
-              <p className="empty-result">No files found</p>
+              <p className="text-[14px] text-center text-[#8A7A65] py-2">No files found</p>
             )}
           </ul>
         )}

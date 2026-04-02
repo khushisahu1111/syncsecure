@@ -1,17 +1,24 @@
 import type { Metadata } from "next";
-import { Poppins } from 'next/font/google'
+import { Poppins, Inter } from "next/font/google";
 
 import "./globals.css";
 
 const poppins = Poppins({
-    subsets: ['latin'],
-    weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
-    variable: '--font-poppins',
-})
+  subsets: ["latin"],
+  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
+  variable: "--font-poppins",
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-inter",
+});
 
 export const metadata: Metadata = {
-  title: "StoreIt",
-  description: "StoreIt - The only storage solution you need.",
+  title: "SyncSecure — Your Digital Vault",
+  description:
+    "SyncSecure — Store, organise, and share your files with bank-grade security and a modern, intuitive experience.",
 };
 
 export default function RootLayout({
@@ -22,7 +29,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${poppins.variable} font-poppins antialiased`}
+        className={`${poppins.variable} ${inter.variable} font-inter antialiased`}
       >
         {children}
       </body>
