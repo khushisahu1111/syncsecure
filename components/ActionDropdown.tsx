@@ -62,7 +62,24 @@ const ActionDropdown = ({ file }: { file: Models.Document }) => {
     const actions = {
       rename: () =>
         renameFile({ fileId: file.$id, name, extension: file.extension, path }),
-      share: () => updateFileUsers({ fileId: file.$id, emails, path }),
+      share: async () => {
+  const result = await updateFileUsers({ fileId: file.$id, emails, path });
+  // Send email notification to each newly added user
+  for (const email of emails) {
+    await fetch("/api/snd-email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        toEmail: email,
+        fileName: file.name,
+        ownerName: file.owner?.fullName ?? "Someone",
+        fileId: file.$id,
+        bucketFileId: file.bucketFileId,
+      }),
+    });
+  }
+  return result;
+},
       delete: () =>
         deleteFile({ fileId: file.$id, bucketFileId: file.bucketFileId, path }),
       move: () =>
@@ -213,7 +230,7 @@ const ActionDropdown = ({ file }: { file: Models.Document }) => {
                 file.isEncrypted ? (
                   // Encrypted file — route through our server-side decrypt API
                   <Link
-                    href={`/api/decrypt?bucketFileId=${file.bucketFileId}&name=${encodeURIComponent(file.name)}`}
+                    href={`/api/decrypt?bucketFileId=${file.bucketFileId}&fileId=${file.$id}&name=${encodeURIComponent(file.name)}`}
                     download={file.name}
                     className="flex items-center gap-2"
                   >

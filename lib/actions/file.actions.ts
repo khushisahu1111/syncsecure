@@ -2,6 +2,7 @@
 
 import { createAdminClient, createSessionClient } from "@/lib/appwrite";
 import { InputFile } from "node-appwrite/file";
+import { Databases } from "node-appwrite";
 import { appwriteConfig } from "@/lib/appwrite/config";
 import { ID, Models, Query } from "node-appwrite";
 import { constructFileUrl, getFileType, parseStringify } from "@/lib/utils";
@@ -10,8 +11,35 @@ import { getCurrentUser } from "@/lib/actions/user.actions";
 import { encryptBuffer } from "@/lib/crypto/serverCrypto";
 
 const handleError = (error: unknown, message: string) => {
-  console.log(error, message);
+  if (process.env.NODE_ENV === 'development') {
+    console.log(error, message);
+  }
   throw error;
+};
+
+// SECURITY: Helper to verify user has permission to modify a file
+const verifyFileOwnership = async (
+  fileId: string,
+  databases: any,
+) => {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) throw new Error("User not authenticated");
+
+  const file = await databases.getDocument(
+    appwriteConfig.databaseId,
+    appwriteConfig.filesCollectionId,
+    fileId,
+  );
+
+  // Handle both cases: owner as ID string or owner as object with $id
+  const ownerId = typeof file.owner === "string" ? file.owner : file.owner?.$id;
+
+  // Only the file owner can modify it
+  if (ownerId !== currentUser.$id) {
+    throw new Error("Unauthorized: You don't have permission to modify this file");
+  }
+
+  return file;
 };
 
 // Helper: retry an async operation up to `maxAttempts` times with exponential backoff.
@@ -59,13 +87,7 @@ export const uploadFile = async ({
     if (isEncrypted) {
       try {
         const rawBuffer = Buffer.from(await file.arrayBuffer());
-        console.log(
-          `[uploadFile] Encrypting "${file.name}" — ${rawBuffer.byteLength} bytes`,
-        );
         const encryptedBuffer = encryptBuffer(rawBuffer);
-        console.log(
-          `[uploadFile] Encrypted size: ${encryptedBuffer.byteLength} bytes`,
-        );
         inputFile = InputFile.fromBuffer(encryptedBuffer, file.name);
       } catch (encryptError) {
         console.error("[uploadFile] Encryption failed:", encryptError);
@@ -76,9 +98,6 @@ export const uploadFile = async ({
     } else {
       // FIX: convert Web File → Node Buffer before passing to the SDK.
       const rawBuffer = Buffer.from(await file.arrayBuffer());
-      console.log(
-        `[uploadFile] Uploading "${file.name}" — ${rawBuffer.byteLength} bytes`,
-      );
       inputFile = InputFile.fromBuffer(rawBuffer, file.name);
     }
 
@@ -181,7 +200,6 @@ export const getFiles = async ({
       queries,
     );
 
-    console.log({ files });
     return parseStringify(files);
   } catch (error) {
     handleError(error, "Failed to get files");
@@ -197,6 +215,9 @@ export const renameFile = async ({
   const { databases } = await createAdminClient();
 
   try {
+    // SECURITY: Verify user owns the file
+    await verifyFileOwnership(fileId, databases);
+
     const newName = `${name}.${extension}`;
     const updatedFile = await databases.updateDocument(
       appwriteConfig.databaseId,
@@ -222,6 +243,9 @@ export const updateFileUsers = async ({
   const { databases } = await createAdminClient();
 
   try {
+    // SECURITY: Verify user owns the file before allowing shares
+    await verifyFileOwnership(fileId, databases);
+
     const updatedFile = await databases.updateDocument(
       appwriteConfig.databaseId,
       appwriteConfig.filesCollectionId,
@@ -234,7 +258,7 @@ export const updateFileUsers = async ({
     revalidatePath(path);
     return parseStringify(updatedFile);
   } catch (error) {
-    handleError(error, "Failed to rename file");
+    handleError(error, "Failed to share file");
   }
 };
 
@@ -248,6 +272,9 @@ export const deleteFile = async ({
   const { databases } = await createAdminClient();
 
   try {
+    // SECURITY: Verify user owns the file before deletion
+    await verifyFileOwnership(fileId, databases);
+
     await databases.updateDocument(
       appwriteConfig.databaseId,
       appwriteConfig.filesCollectionId,
@@ -391,6 +418,9 @@ export const restoreFile = async ({ fileId, path }: RestoreFileProps) => {
   const { databases } = await createAdminClient();
 
   try {
+    // SECURITY: Verify user owns the file before restoring
+    await verifyFileOwnership(fileId, databases);
+
     const restoredFile = await databases.updateDocument(
       appwriteConfig.databaseId,
       appwriteConfig.filesCollectionId,
@@ -416,6 +446,9 @@ export const permanentlyDeleteFile = async ({
   const { databases, storage } = await createAdminClient();
 
   try {
+    // SECURITY: Verify user owns the file before permanently deleting
+    await verifyFileOwnership(fileId, databases);
+
     await databases.deleteDocument(
       appwriteConfig.databaseId,
       appwriteConfig.filesCollectionId,
@@ -485,6 +518,9 @@ export const toggleStarFile = async ({
   const { databases } = await createAdminClient();
 
   try {
+    // SECURITY: Verify user owns the file before starring
+    await verifyFileOwnership(fileId, databases);
+
     const updated = await databases.updateDocument(
       appwriteConfig.databaseId,
       appwriteConfig.filesCollectionId,
@@ -508,6 +544,9 @@ export const moveFileToFolder = async ({
   const { databases } = await createAdminClient();
 
   try {
+    // SECURITY: Verify user owns the file before moving
+    await verifyFileOwnership(fileId, databases);
+
     const updated = await databases.updateDocument(
       appwriteConfig.databaseId,
       appwriteConfig.filesCollectionId,

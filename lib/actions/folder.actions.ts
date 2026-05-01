@@ -2,14 +2,41 @@
 
 import { createAdminClient } from "@/lib/appwrite";
 import { appwriteConfig } from "@/lib/appwrite/config";
-import { ID, Query } from "node-appwrite";
+import { ID, Query, Databases } from "node-appwrite";
 import { parseStringify } from "@/lib/utils";
 import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/actions/user.actions";
 
 const handleError = (error: unknown, message: string) => {
-  console.log(error, message);
+  if (process.env.NODE_ENV === 'development') {
+    console.log(error, message);
+  }
   throw error;
+};
+
+// SECURITY: Helper to verify user has permission to modify a folder
+const verifyFolderOwnership = async (
+  folderId: string,
+  databases: any,
+) => {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) throw new Error("User not authenticated");
+
+  const folder = await databases.getDocument(
+    appwriteConfig.databaseId,
+    appwriteConfig.foldersCollectionId,
+    folderId,
+  );
+
+  // Handle both cases: owner as ID string or owner as object with $id
+  const ownerId = typeof folder.owner === "string" ? folder.owner : folder.owner?.$id;
+
+  // Only the folder owner can modify it
+  if (ownerId !== currentUser.$id) {
+    throw new Error("Unauthorized: You don't have permission to modify this folder");
+  }
+
+  return folder;
 };
 
 // ============================== CREATE FOLDER
@@ -97,6 +124,9 @@ export const renameFolder = async ({
   const { databases } = await createAdminClient();
 
   try {
+    // SECURITY: Verify user owns the folder before renaming
+    await verifyFolderOwnership(folderId, databases);
+
     const updated = await databases.updateDocument(
       appwriteConfig.databaseId,
       appwriteConfig.foldersCollectionId,
@@ -116,6 +146,9 @@ export const deleteFolder = async ({ folderId, path }: DeleteFolderProps) => {
   const { databases } = await createAdminClient();
 
   try {
+    // SECURITY: Verify user owns the folder before deleting
+    await verifyFolderOwnership(folderId, databases);
+
     await databases.updateDocument(
       appwriteConfig.databaseId,
       appwriteConfig.foldersCollectionId,
@@ -139,6 +172,9 @@ export const toggleStarFolder = async (
   const { databases } = await createAdminClient();
 
   try {
+    // SECURITY: Verify user owns the folder before starring
+    await verifyFolderOwnership(folderId, databases);
+
     const updated = await databases.updateDocument(
       appwriteConfig.databaseId,
       appwriteConfig.foldersCollectionId,
